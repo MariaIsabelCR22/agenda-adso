@@ -33,7 +33,7 @@ export default function FormularioContacto({ onAgregar }) {
       />
       <input
         name="telefono"
-        placeholder="Teléfono"
+        placeholder="Telefono"
         value={form.telefono}
         onChange={onChange}
       />
