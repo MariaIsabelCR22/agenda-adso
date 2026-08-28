@@ -1,0 +1,179 @@
+// Archivo: src/App.jsx 
+
+import { useEffect, useState } from "react"; 
+
+import { 
+  listarContactos, 
+  crearContacto, 
+  eliminarContactoPorId, 
+} from "./api"; 
+
+import { APP_INFO } from "./config"; 
+
+import FormularioContacto from "./components/FormularioContacto"; 
+import ContactoCard from "./components/ContactoCard"; 
+
+function App() { 
+  const [contactos, setContactos] = useState([]); 
+  const [cargando, setCargando] = useState(true); 
+  const [error, setError] = useState(""); 
+
+  // Nuevos estados para búsqueda y ordenamiento (Clase 10)
+  const [busqueda, setBusqueda] = useState("");
+  const [ordenAsc, setOrdenAsc] = useState(true);
+
+  useEffect(() => { 
+    const cargarContactos = async () => { 
+      try { 
+        setCargando(true); 
+        setError(""); 
+        const data = await listarContactos(); 
+        setContactos(data); 
+      } catch (error) { 
+        console.error("Error al cargar contactos:", error); 
+        setError( 
+          "No se pudieron cargar los contactos. Verifica que el servidor esté encendido e intenta de nuevo." 
+        ); 
+      } finally { 
+        setCargando(false); 
+      } 
+    }; 
+
+    cargarContactos(); 
+  }, []); 
+
+  const onAgregarContacto = async (nuevoContacto) => { 
+    try { 
+      setError(""); 
+      const creado = await crearContacto(nuevoContacto); 
+      setContactos((prev) => [...prev, creado]); 
+    } catch (error) { 
+      console.error("Error al crear contacto:", error); 
+      setError( 
+        "No se pudo guardar el contacto. Verifica tu conexión o el estado del servidor e intenta nuevamente." 
+      ); 
+      throw error; 
+    } 
+  }; 
+
+  const onEliminarContacto = async (id) => { 
+    try { 
+      setError(""); 
+      await eliminarContactoPorId(id); 
+      setContactos((prev) => prev.filter((c) => c.id !== id)); 
+    } catch (error) { 
+      console.error("Error al eliminar contacto:", error); 
+      setError( 
+        "No se pudo eliminar el contacto. Vuelve a intentarlo o verifica el servidor." 
+      ); 
+    } 
+  }; 
+
+  // 1. Lógica de Filtrado (Incluyendo nombre, correo, etiqueta y teléfono - Mini Reto 1)
+  const contactosFiltrados = contactos.filter((c) => {
+    const termino = busqueda.toLowerCase();
+    const nombre = c.nombre.toLowerCase();
+    const correo = c.correo.toLowerCase();
+    const etiqueta = (c.etiqueta || "").toLowerCase();
+    const telefono = (c.telefono || "").toLowerCase();
+
+    return (
+      nombre.includes(termino) ||
+      correo.includes(termino) ||
+      etiqueta.includes(termino) ||
+      telefono.includes(termino)
+    );
+  });
+
+  // 2. Lógica de Ordenamiento alfabético seguro (Inmutabilidad con spread operator)[cite: 1]
+  const contactosOrdenados = [...contactosFiltrados].sort((a, b) => {
+    const nombreA = a.nombre.toLowerCase();
+    const nombreB = b.nombre.toLowerCase();
+    if (nombreA < nombreB) return ordenAsc ? -1 : 1;
+    if (nombreA > nombreB) return ordenAsc ? 1 : -1;
+    return 0;
+  });
+
+  return ( 
+    <div className="min-h-screen bg-gray-50"> 
+      <div className="max-w-4xl mx-auto px-4 py-8"> 
+        <header className="mb-8"> 
+          <p className="text-xs tracking-[0.3em] text-gray-500 uppercase"> 
+            Desarrollo Web ReactJS Ficha {APP_INFO.ficha}
+          </p> 
+          <h1 className="text-4xl font-extrabold text-gray-900 mt-2"> 
+            Agenda ADSO v8
+          </h1> 
+          <p className="text-sm text-gray-600 mt-1"> 
+            {APP_INFO.subtitulo}
+          </p> 
+        </header> 
+
+        {error && ( 
+          <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3"> 
+            <p className="text-sm font-medium text-red-700">{error}</p> 
+          </div> 
+        )} 
+
+        {cargando ? ( 
+          <p className="text-sm text-gray-500">Cargando contactos...</p> 
+        ) : ( 
+          <> 
+            <FormularioContacto onAgregar={onAgregarContacto} /> 
+
+            {/* Bloque de Búsqueda y Ordenamiento (Clase 10)*/}
+            <div className="bg-white shadow-sm rounded-2xl p-6 mb-6 space-y-4">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <input
+                  type="text"
+                  className="w-full md:flex-1 rounded-xl border border-gray-300 focus:ring-purple-500 focus:border-purple-500 px-4 py-3 text-sm"
+                  placeholder="Buscar por nombre, correo, etiqueta o teléfono..."
+                  value={busqueda}
+                  onChange={(e) => setBusqueda(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setOrdenAsc((prev) => !prev)}
+                  className="bg-gray-100 text-gray-700 text-sm px-4 py-3 rounded-xl border border-gray-200 hover:bg-gray-200 font-medium"
+                >
+                  {ordenAsc ? "Ordenar Z-A" : "Ordenar A-Z"}
+                </button>
+              </div>
+
+              {/* Contador dinámico de resultados (Mini Reto 2)[cite: 1] */}
+              <p className="text-xs text-gray-500 font-medium">
+                Mostrando {contactosOrdenados.length} {contactosOrdenados.length === 1 ? "contacto" : "contactos"}
+              </p>
+            </div>
+
+            <section className="space-y-4"> 
+              {contactosOrdenados.length === 0 ? ( 
+                <p className="text-sm text-gray-500"> 
+                  No se encontraron contactos que coincidan con la búsqueda.
+                </p> 
+              ) : ( 
+                contactosOrdenados.map((c) => ( 
+                  <ContactoCard 
+                    key={c.id} 
+                    nombre={c.nombre} 
+                    telefono={c.telefono} 
+                    correo={c.correo} 
+                    etiqueta={c.etiqueta} 
+                    onEliminar={() => onEliminarContacto(c.id)} 
+                  /> 
+                )) 
+              )} 
+            </section> 
+          </> 
+        )} 
+
+        <footer className="mt-8 text-xs text-gray-400"> 
+          <p>Desarrollo Web – ReactJS | Proyecto Agenda ADSO</p> 
+          <p>Instructor: Gustavo Adolfo Bolaños Dorado</p> 
+        </footer> 
+      </div> 
+    </div> 
+  ); 
+} 
+
+export default App;

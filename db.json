@@ -1,0 +1,33 @@
+{
+  "contactos": [
+    {
+      "id": "1",
+      "nombre": "Gustavo",
+      "telefono": "3217532037",
+      "correo": "gabodorado@gmail.com",
+      "etiqueta": "profe"
+    },
+    {
+      "nombre": "Maria",
+      "telefono": "3243943856",
+      "correo": "hola@gmail.com",
+      "etiqueta": "compañera",
+      "id": "INfMU1h8Qsg"
+    },
+    {
+      "nombre": "Juan David",
+      "telefono": "1234432",
+      "correo": "juan@gmail.com",
+      "etiqueta": "compañero",
+      "id": "2ITcT4Chuqw"
+    },
+    {
+      "nombre": "pepe",
+      "telefono": "76867853",
+      "correo": "pepe@gmail.com",
+      "etiqueta": "amigo",
+      "id": "iNu-kJHbntc"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}
