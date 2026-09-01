@@ -1,12 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function FormularioContacto({ onAgregar }) {
-  const [form, setForm] = useState({
-    nombre: "",
-    telefono: "",
-    correo: "",
-    etiqueta: ""
-  });
+const formularioInicial = {
+  nombre: "",
+  telefono: "",
+  correo: "",
+  etiqueta: ""
+};
+
+export default function FormularioContacto({
+  onAgregar,
+  contactoEnEdicion,
+  onActualizar,
+  onCancelarEdicion
+}) {
+  const [form, setForm] = useState(formularioInicial);
 
   const [errores, setErrores] = useState({
     nombre: "",
@@ -15,6 +22,25 @@ export default function FormularioContacto({ onAgregar }) {
   });
 
   const [enviando, setEnviando] = useState(false);
+
+  // Cuando se selecciona un contacto, cargamos sus datos en el formulario.
+  useEffect(() => {
+    if (contactoEnEdicion) {
+      setForm({
+        nombre: contactoEnEdicion.nombre || "",
+        telefono: contactoEnEdicion.telefono || "",
+        correo: contactoEnEdicion.correo || "",
+        etiqueta: contactoEnEdicion.etiqueta || ""
+      });
+    } else {
+      setForm(formularioInicial);
+      setErrores({
+        nombre: "",
+        telefono: "",
+        correo: ""
+      });
+    }
+  }, [contactoEnEdicion]);
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -60,37 +86,38 @@ export default function FormularioContacto({ onAgregar }) {
   }
 
   const onSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const esValido = validarFormulario();
+    if (!validarFormulario()) {
+      return;
+    }
 
-  if (!esValido) {
-    return;
-  }
+    try {
+      setEnviando(true);
 
-  try {
-    setEnviando(true);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+      if (contactoEnEdicion) {
+        // Conservamos el id para que la API sepa qué contacto actualizar.
+        await onActualizar({
+          ...form,
+          id: contactoEnEdicion.id
+        });
+      } else {
+        await onAgregar(form);
+        setForm(formularioInicial);
+        setErrores({
+          nombre: "",
+          telefono: "",
+          correo: ""
+        });
+      }
+    } finally {
+      setEnviando(false);
+    }
+  };
 
-    await onAgregar(form);
-
-    setForm({
-      nombre: "",
-      telefono: "",
-      correo: "",
-      etiqueta: ""
-    });
-
-    setErrores({
-      nombre: "",
-      telefono: "",
-      correo: ""
-    });
-  } finally {
-    setEnviando(false);
-  }
-};
+  const esEdicion = Boolean(contactoEnEdicion);
 
   return (
     <form
@@ -98,14 +125,20 @@ export default function FormularioContacto({ onAgregar }) {
       className="bg-white shadow-sm rounded-2xl p-6 space-y-4 mb-8"
     >
       <h2 className="text-lg font-semibold text-gray-900 mb-2">
-        Nuevo contacto
+        {esEdicion ? "Editar contacto" : "Nuevo contacto"}
       </h2>
+
+      {esEdicion && (
+        <p className="text-sm text-purple-700 bg-purple-50 border border-purple-100 rounded-xl px-4 py-3">
+          Estás editando a <strong>{contactoEnEdicion.nombre}</strong>.
+          Modifica los datos y selecciona "Guardar cambios".
+        </p>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Nombre *
         </label>
-
         <input
           className="w-full rounded-xl border border-gray-300 focus:ring-purple-500 focus:border-purple-500 px-4 py-3"
           name="nombre"
@@ -113,11 +146,8 @@ export default function FormularioContacto({ onAgregar }) {
           value={form.nombre}
           onChange={onChange}
         />
-
         {errores.nombre && (
-          <p className="mt-1 text-xs text-red-600">
-            {errores.nombre}
-          </p>
+          <p className="mt-1 text-xs text-red-600">{errores.nombre}</p>
         )}
       </div>
 
@@ -125,7 +155,6 @@ export default function FormularioContacto({ onAgregar }) {
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Teléfono *
         </label>
-
         <input
           className="w-full rounded-xl border border-gray-300 focus:ring-purple-500 focus:border-purple-500 px-4 py-3"
           name="telefono"
@@ -133,11 +162,8 @@ export default function FormularioContacto({ onAgregar }) {
           value={form.telefono}
           onChange={onChange}
         />
-
         {errores.telefono && (
-          <p className="mt-1 text-xs text-red-600">
-            {errores.telefono}
-          </p>
+          <p className="mt-1 text-xs text-red-600">{errores.telefono}</p>
         )}
       </div>
 
@@ -145,7 +171,6 @@ export default function FormularioContacto({ onAgregar }) {
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Correo *
         </label>
-
         <input
           className="w-full rounded-xl border border-gray-300 focus:ring-purple-500 focus:border-purple-500 px-4 py-3"
           name="correo"
@@ -154,11 +179,8 @@ export default function FormularioContacto({ onAgregar }) {
           value={form.correo}
           onChange={onChange}
         />
-
         {errores.correo && (
-          <p className="mt-1 text-xs text-red-600">
-            {errores.correo}
-          </p>
+          <p className="mt-1 text-xs text-red-600">{errores.correo}</p>
         )}
       </div>
 
@@ -166,7 +188,6 @@ export default function FormularioContacto({ onAgregar }) {
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Etiqueta (opcional)
         </label>
-
         <input
           className="w-full rounded-xl border border-gray-300 focus:ring-purple-500 focus:border-purple-500 px-4 py-3"
           name="etiqueta"
@@ -176,14 +197,29 @@ export default function FormularioContacto({ onAgregar }) {
         />
       </div>
 
-      <div className="pt-2">
+      <div className="pt-2 flex flex-col md:flex-row gap-3">
         <button
           type="submit"
           disabled={enviando}
           className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 disabled:bg-purple-300 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl font-semibold shadow-sm"
         >
-          {enviando ? "Guardando..." : "Agregar contacto"}
+          {enviando
+            ? "Guardando..."
+            : esEdicion
+              ? "Guardar cambios"
+              : "Agregar contacto"}
         </button>
+
+        {esEdicion && (
+          <button
+            type="button"
+            onClick={onCancelarEdicion}
+            disabled={enviando}
+            className="w-full md:w-auto bg-gray-100 hover:bg-gray-200 disabled:opacity-50 text-gray-700 px-6 py-3 rounded-xl font-semibold border border-gray-200"
+          >
+            Cancelar edición
+          </button>
+        )}
       </div>
     </form>
   );

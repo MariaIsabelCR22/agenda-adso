@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { 
   listarContactos, 
   crearContacto, 
+  actualizarContacto,
   eliminarContactoPorId, 
 } from "./api"; 
 
@@ -21,6 +22,8 @@ function App() {
   // Nuevos estados para búsqueda y ordenamiento (Clase 10)
   const [busqueda, setBusqueda] = useState("");
   const [ordenAsc, setOrdenAsc] = useState(true);
+  // Contacto que actualmente se está editando
+  const [contactoEnEdicion, setContactoEnEdicion] = useState(null);
 
   useEffect(() => { 
     const cargarContactos = async () => { 
@@ -55,6 +58,44 @@ function App() {
       throw error; 
     } 
   }; 
+
+  // Inicia el modo de edición con el contacto seleccionado
+  const onEditarClick = (contacto) => {
+    setContactoEnEdicion(contacto);
+    setError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Cancela la edición sin modificar el contacto
+  const onCancelarEdicion = () => {
+    setContactoEnEdicion(null);
+    setError("");
+  };
+
+  // Guarda los cambios en la API y actualiza la lista local
+  const onActualizarContacto = async (contactoActualizado) => {
+    try {
+      setError("");
+      const actualizado = await actualizarContacto(
+        contactoActualizado.id,
+        contactoActualizado
+      );
+
+      setContactos((prev) =>
+        prev.map((c) =>
+          c.id === actualizado.id ? actualizado : c
+        )
+      );
+
+      setContactoEnEdicion(null);
+    } catch (error) {
+      console.error("Error al actualizar contacto:", error);
+      setError(
+        "No se pudo actualizar el contacto. Verifica el servidor e intenta nuevamente."
+      );
+      throw error;
+    }
+  };
 
   const onEliminarContacto = async (id) => { 
     try { 
@@ -102,7 +143,7 @@ function App() {
             Desarrollo Web ReactJS Ficha {APP_INFO.ficha}
           </p> 
           <h1 className="text-4xl font-extrabold text-gray-900 mt-2"> 
-            Agenda ADSO v8
+            Agenda ADSO v9
           </h1> 
           <p className="text-sm text-gray-600 mt-1"> 
             {APP_INFO.subtitulo}
@@ -119,7 +160,12 @@ function App() {
           <p className="text-sm text-gray-500">Cargando contactos...</p> 
         ) : ( 
           <> 
-            <FormularioContacto onAgregar={onAgregarContacto} /> 
+            <FormularioContacto
+              onAgregar={onAgregarContacto}
+              contactoEnEdicion={contactoEnEdicion}
+              onActualizar={onActualizarContacto}
+              onCancelarEdicion={onCancelarEdicion}
+            /> 
 
             {/* Bloque de Búsqueda y Ordenamiento (Clase 10)*/}
             <div className="bg-white shadow-sm rounded-2xl p-6 mb-6 space-y-4">
@@ -159,7 +205,8 @@ function App() {
                     telefono={c.telefono} 
                     correo={c.correo} 
                     etiqueta={c.etiqueta} 
-                    onEliminar={() => onEliminarContacto(c.id)} 
+                    onEditar={() => onEditarClick(c)}
+                    onEliminar={() => onEliminarContacto(c.id)}
                   /> 
                 )) 
               )} 

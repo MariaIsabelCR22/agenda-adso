@@ -39,6 +39,23 @@ export async function crearContacto(data) {
 } 
 // Función DELETE: eliminar contacto por id 
 
+// Función PUT: actualizar un contacto por id
+export async function actualizarContacto(id, data) {
+  // Hacemos un PUT a /contactos/:id con los datos actualizados
+  const res = await fetch(`${API_BASE_URL}/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+
+  // Validamos la respuesta
+  if (!res.ok) throw new Error("Error al actualizar el contacto");
+
+  // Devolvemos el contacto actualizado
+  return res.json();
+}
+
+// Función DELETE: eliminar contacto por id
 export async function eliminarContactoPorId(id) { 
   // Hacemos un DELETE a /contactos/:id usando la URL base 
   const res = await fetch(`${API_BASE_URL}/${id}`, { method: "DELETE" }); 
