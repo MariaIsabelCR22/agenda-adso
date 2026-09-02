@@ -1,18 +1,39 @@
 {
   "contactos": [
     {
-      "nombre": "Maria Isabel Correa Restrepo",
-      "telefono": "1234567",
+      "nombre": "Maria",
+      "telefono": "123123123",
       "correo": "maria@gmail.com",
       "etiqueta": "aprendiz",
-      "id": "wFyltzFDmRQ"
+      "id": "Q6A9HK9aUMM"
     },
     {
       "nombre": "Juan David",
-      "telefono": "91823091283",
+      "telefono": "423424142125",
       "correo": "juan@gmail.com",
       "etiqueta": "amigo",
-      "id": "NFTVihUTgN4"
+      "id": "YQf8418a1OA"
+    },
+    {
+      "nombre": "Gustavo",
+      "telefono": "12312433513432",
+      "correo": "gabodorado@gmail.com",
+      "etiqueta": "profe",
+      "id": "edd-FdYBO9k"
+    },
+    {
+      "nombre": "Luis",
+      "telefono": "756745674",
+      "correo": "luis@gmail.com",
+      "etiqueta": "aprendiz",
+      "id": "T_Am5hESEaY"
+    },
+    {
+      "nombre": "Melany",
+      "telefono": "79879095654",
+      "correo": "melany@gmail.com",
+      "etiqueta": "aprendiz",
+      "id": "82g7t01ni6M"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

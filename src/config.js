@@ -8,7 +8,7 @@
 
 // Si cambia el puerto o la ruta, solo se modifica aquí. 
 
-export const API_BASE_URL = "http://localhost:3002/contactos"; 
+export const API_BASE_URL = "http://localhost:3000/contactos"; 
 
  
 
@@ -18,11 +18,11 @@ export const APP_INFO = {
 
   // Número de ficha que se muestra en el encabezado 
 
-  ficha: "3223876", 
+  ficha: "3412785", 
 
   // Título principal de la aplicación 
 
-  titulo: "Agenda ADSO v9", 
+  titulo: "Agenda ADSO v11B", 
 
   // Subtítulo o descripción corta que aparece debajo del título 
 
